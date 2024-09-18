@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #d8bbbb;
+            color: #1c1010;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4A90E2;
+        }
+
+        form {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            background-color: #cdafaf;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        input.error {
+            border-color: red;
+        }
+
+        input.valid {
+            border-color: green;
+        }
+
+        #submitBtn {
+            background-color: #4A90E2;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        #submitBtn:disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+
+        #submitBtn:hover:not(:disabled) {
+            background-color: #357ABD;
+        }
+
+        #message, #phoneMessage {
+            color: red;
+            margin-top: 5px;
+        }
+
+        .checkbox-group, .radio-group {
+            margin: 10px 0;
+        }
+
+        .checkbox-group input,
+        .radio-group input {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            form {
+                padding: 15px;
+            }
+
+            #submitBtn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+    
+    </style>
+</head>
+<body>
+
+    <h1>Bookings For Dinner</h1>
+
+    <form id="myForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+        <span id="message"></span>
+        <br><br>
+
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone" required>
+        <span id="phoneMessage"></span>
+        <br><br>
+
+        <label>What would you like to have with us? (Select one or more)</label>
+        <br>
+        <input type="checkbox" id="Starter" value="Starter">Starter <br>
+        <input type="checkbox" id="Main_course" value="Main_course">Main_course<br>
+        <input type="checkbox" id="Desserts and Drinks" value="Desserts and Drinks"> Desserts and Drinks<br>
+        <br>
+
+        <label>Select a time:</label><br>
+        <input type="radio" name="time" value="05:00" checked> 05:00<br>
+        <input type="radio" name="time" value="06:00"> 06:00<br>
+        <input type="radio" name="time" value="07:00"> 07:00<br>
+        <br>
+
+        <button type="submit" id="submitBtn" disabled>Submit</button>
+    </form>
+
+    <div id="confirmationMessage"></div>
+
+    <script>
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const submitBtn = document.getElementById('submitBtn');
+        const message = document.getElementById('message');
+        const phoneMessage = document.getElementById('phoneMessage');
+
+        function validateName() {
+            const nameValue = nameInput.value.trim();
+            if (nameValue === "") {
+                message.textContent = "Error: Name is empty.";
+                nameInput.classList.add('error');
+                nameInput.classList.remove('valid');
+            } else if (nameValue.split(" ").length < 2) {
+                message.textContent = "Error: First and last names are required.";
+                nameInput.classList.add('error');
+                nameInput.classList.remove('valid');
+            } else {
+                message.textContent = "";
+                nameInput.classList.add('valid');
+                nameInput.classList.remove('error');
+            }
+            checkFormValidity();
+        }
+
+        function validatePhone() {
+            const phoneValue = phoneInput.value.trim();
+            const phoneRegex = /^[0-9][a-zA-Z0-9]{5}$/; 
+
+            if (phoneValue === "") {
+                phoneMessage.textContent = "Error: Phone number is empty.";
+                phoneInput.classList.add('error');
+                phoneInput.classList.remove('valid');
+            } else if (phoneValue.length !== 6) {
+                phoneMessage.textContent = "Error: Phone numbers must have exactly 6 characters.";
+                phoneInput.classList.add('error');
+                phoneInput.classList.remove('valid');
+            } else if (!phoneRegex.test(phoneValue)) {
+                phoneMessage.textContent = "Error: Phone number must start with numbers.";
+                phoneInput.classList.add('error');
+                phoneInput.classList.remove('valid');
+            } else {
+                phoneMessage.textContent = "";
+                phoneInput.classList.add('valid');
+                phoneInput.classList.remove('error');
+            }
+            checkFormValidity();
+        }
+
+        function checkFormValidity() {
+            if (nameInput.classList.contains('valid') && phoneInput.classList.contains('valid')) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        nameInput.addEventListener('blur', validateName);
+        phoneInput.addEventListener('blur', validatePhone);
+
+        document.getElementById('myForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const time = document.querySelector('input[name="time"]:checked').value;
+
+            const starters = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(function(checkbox) {
+                starters.push(checkbox.value);
+            });
+
+            confirmationMessage.innerHTML = `
+                <h2>Reservation Confirmed!</h2>
+                <p>Reservation for: <strong>${name}</strong></p>
+                <p>Phone: <strong>${phone}</strong></p>
+                <p>Time: <strong>${time}</strong></p>
+                <p>Starters: <strong>${starters.join(', ') || 'None selected'}</strong></p>
+            `;
+
+            
+            nameInput.value = '';
+            phoneInput.value = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelector('input[name="time"][value="05:00"]').checked = true;
+        });
+
+    </script>
+
+</body>
+</html>
